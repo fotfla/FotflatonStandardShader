@@ -20,18 +20,17 @@
 			{
 			CGPROGRAM
 			#pragma vertex vert
-            #pragma fragment frag
+                        #pragma fragment frag
 			#pragma geometry geo
 			#pragma multi_compile_fwdbase
-            #include "HLSLSupport.cginc"
-            #include "UnityShaderVariables.cginc"
-            #include "UnityShaderUtilities.cginc"
-
+                        #include "HLSLSupport.cginc"
+                        #include "UnityShaderVariables.cginc"
+                        #include "UnityShaderUtilities.cginc"
 
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
 			#include "UnityPBSLighting.cginc"
-            #include "AutoLight.cginc"
+                        #include "AutoLight.cginc"
 			#include "cginc/fotflatonStandardShaderFunc.cginc"
 
 			struct appdata
@@ -42,13 +41,13 @@
 				float2 uv : TEXCOORD0;
 			};
 
-	struct VSOut
-	{
-		float2 uv : TEXCOORD0;
-		float4 vertex : SV_POSITION;
-		float3 normal : NORMAL;
-		float4 tangent : TANGENT;
-	};
+	                struct VSOut
+	                {
+		                float2 uv : TEXCOORD0;
+		                float4 vertex : SV_POSITION;
+		                float3 normal : NORMAL;
+		                float4 tangent : TANGENT;
+	                };
 
 			sampler2D _MainTex;
 			float4 _AlbedoColor;
