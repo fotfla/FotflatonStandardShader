@@ -1,0 +1,137 @@
+Shader "FotflatonStandardShader/<Name>"
+{
+Properties
+{
+_MainTex("Albedo", 2D) = "white" {}
+_AlbedoColor("Color",Color) = (1,1,1,1)
+_Metalic("Metalic",2D) = "black" {}
+_Smoothness("Smoothness", Range(0.0,1.0)) = 1
+[Normal]_Normal("Normal",2D) = "white"{}
+_Emission("Emission",2D) = "black" {}
+_EmissionColor("Emission Color",Color) = (1,1,1,1)
+_Intensity("Intensity",float) = 0
+}
+SubShader
+{
+
+Tags{ "LightMode" = "ForwardBase"}
+Cull off
+LOD <LOD=100>
+
+Pass
+{
+CGPROGRAM
+
+#pragma vertex vert
+#pragma fragment frag
+#pragma geometry geo
+#pragma multi_compile_fwdbase
+
+#include "HLSLSupport.cginc"
+#include "UnityShaderVariables.cginc"
+#include "UnityShaderUtilities.cginc"
+
+#include "UnityCG.cginc"
+#include "Lighting.cginc"
+#include "UnityPBSLighting.cginc"
+#include "AutoLight.cginc"
+#include "cginc/fotflatonStandardShaderFunc.cginc"
+
+struct appdata
+{
+   float4 vertex : POSITION;
+   float3 normal : NORMAL;
+   float4 tangent : TANGENT;
+   float2 uv : TEXCOORD0;
+};
+
+struct VSOut
+{
+   float2 uv : TEXCOORD0;
+   float4 vertex : SV_POSITION;
+   float3 normal : NORMAL;
+   float4 tangent : TANGENT;
+};
+
+sampler2D _MainTex;
+float4 _AlbedoColor;
+sampler2D _Emission;
+float4 _EmissionColor;
+float _Intensity;
+
+@block VertexShader	
+VSOut vert(appdata v)
+{
+   VSOut o;
+   o.vertex = v.vertex;
+   o.normal = v.normal;
+   o.tangent = v.tangent;
+   o.uv = v.uv;
+   return o;
+}
+@endblock
+
+@block GeometryShader
+[maxvertexcount(6)]
+void geo(triangle VSOut input[3], inout TriangleStream<GSOut> outStream)
+{
+   GSOut o;
+
+   float3 n = NormalReCalc(input[0].vertex, input[1].vertex, input[2].vertex);
+
+				float2 uv = input[0].uv;
+
+				for (int i = 0; i < 3; i++) {
+
+					float4 v = input[i].vertex;
+					o.vertex = UnityObjectToClipPos(v);
+
+					o.normal = n;
+					o.tangent.xyz = UnityObjectToWorldDir(input[i].tangent);
+
+					o.uv = input[i].uv;
+
+					float tangentSign = input[i].tangent.w * unity_WorldTransformParams.w;
+					o.worldPos = mul(unity_ObjectToWorld, v);
+					o.worldNormal = UnityObjectToWorldNormal(n);
+					o.bitangent = cross(o.normal, o.tangent) *tangentSign;
+					o.id = 0;
+
+					outStream.Append(o);
+				}
+
+				outStream.RestartStrip();
+			}
+		   @endblock
+
+		   @block Surface
+			void SurfaceOut(in GSOut IN, inout Surface output) {
+				output.Albedo = tex2D(_MainTex, IN.uv) * _AlbedoColor;;
+				output.Emission = tex2D(_Emission, IN.uv);
+			}
+			@endblock
+
+			fixed4 frag(GSOut IN) : SV_Target
+			{
+				fixed4 color = fixed4(0, 0, 0, 1);
+
+			Surface surf;
+			UNITY_INITIALIZE_OUTPUT(Surface, surf);
+			SurfaceOut(IN, surf);
+
+			//Albedo
+			color = surf.Albedo;
+
+			Shading(IN, color);
+
+			//Emission
+			fixed4 emission = surf.Emission;
+			color = lerp(color, emission * _Intensity  * _EmissionColor, emission);
+
+			return color;
+			}
+
+			ENDCG
+		}
+	}
+}
