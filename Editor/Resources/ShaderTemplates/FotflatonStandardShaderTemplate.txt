@@ -72,8 +72,8 @@ VSOut vert(appdata v)
 @endblock
 
 @block GeometryShader
-[maxvertexcount(6)]
-void geo(triangle VSOut input[3], inout TriangleStream<GSOut> outStream)
+[maxvertexcount(<maxvertexcount = 6>)]
+void geo(triangle VSOut input[3], inout TriangleStream<GSOut =<GSOut>> outStream)
 {
    GSOut o;
 
