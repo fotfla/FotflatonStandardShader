@@ -3,6 +3,9 @@ UnityでFowardRendering用のGeometryShader対応でLightProbe,ReflectionProbe�
 
 VRChatでVRVJをするために作りました。
 
+hecomiさんのuShaderTemplate対応
+https://github.com/hecomi/uShaderTemplate
+
 # License
 
 MIT
