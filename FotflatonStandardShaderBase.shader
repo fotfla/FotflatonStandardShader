@@ -20,17 +20,19 @@
 			{
 			CGPROGRAM
 			#pragma vertex vert
-                        #pragma fragment frag
+            #pragma fragment frag
 			#pragma geometry geo
 			#pragma multi_compile_fwdbase
-                        #include "HLSLSupport.cginc"
-                        #include "UnityShaderVariables.cginc"
-                        #include "UnityShaderUtilities.cginc"
+			
+            #include "HLSLSupport.cginc"
+            #include "UnityShaderVariables.cginc"
+            #include "UnityShaderUtilities.cginc"
 
+            #define UNITY_PASS_FORWARDBASE
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
 			#include "UnityPBSLighting.cginc"
-                        #include "AutoLight.cginc"
+            #include "AutoLight.cginc"
 			#include "cginc/fotflatonStandardShaderFunc.cginc"
 
 			struct appdata
@@ -41,13 +43,13 @@
 				float2 uv : TEXCOORD0;
 			};
 
-	                struct VSOut
-	                {
-		                float2 uv : TEXCOORD0;
-		                float4 vertex : SV_POSITION;
-		                float3 normal : NORMAL;
-		                float4 tangent : TANGENT;
-	                };
+	        struct VSOut
+	        {
+		        float2 uv : TEXCOORD0;
+		        float4 vertex : SV_POSITION;
+		        float3 normal : NORMAL;
+		        float4 tangent : TANGENT;
+	        };
 
 			sampler2D _MainTex;
 			float4 _AlbedoColor;
@@ -99,27 +101,18 @@
 			}
 
 			void SurfaceOut(in GSOut IN, inout Surface output) {
-				output.Albedo = tex2D(_MainTex, IN.uv) * _AlbedoColor;;
-				output.Emission = tex2D(_Emission, IN.uv);
+				output.Albedo.rgb = tex2D(_MainTex, IN.uv).rgb * _AlbedoColor;
+				output.Emission.rgb = tex2D(_Emission, IN.uv) * _Intensity  * _EmissionColor.rgb;
 			}
 
 			fixed4 frag(GSOut IN) : SV_Target
 			{
-				fixed4 color = fixed4(0, 0, 0, 1);
 
+			fixed4 color = fixed4(0, 0, 0, 1);
 			Surface surf;
 			UNITY_INITIALIZE_OUTPUT(Surface, surf);
 			SurfaceOut(IN, surf);
-
-			//Albedo
-			color = surf.Albedo;
-
-			Shading(IN, color);
-
-			//Emission
-			fixed4 emission = surf.Emission;
-			color = lerp(color, emission * _Intensity  * _EmissionColor, emission);
-
+			Shading(IN, surf,color);
 			return color;
 			}
 
