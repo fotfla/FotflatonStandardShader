@@ -79,55 +79,46 @@ void geo(triangle VSOut input[3], inout TriangleStream<GSOut =<GSOut>> outStream
 
    float3 n = NormalReCalc(input[0].vertex, input[1].vertex, input[2].vertex);
 
-				float2 uv = input[0].uv;
+	float2 uv = input[0].uv;
 
-				for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; i++) {
 
-					float4 v = input[i].vertex;
-					o.vertex = UnityObjectToClipPos(v);
+		float4 v = input[i].vertex;
+		o.vertex = UnityObjectToClipPos(v);
 
-					o.normal = n;
-					o.tangent.xyz = UnityObjectToWorldDir(input[i].tangent);
+		o.normal = n;
+		o.tangent.xyz = UnityObjectToWorldDir(input[i].tangent);
 
-					o.uv = input[i].uv;
+		o.uv = input[i].uv;
 
-					float tangentSign = input[i].tangent.w * unity_WorldTransformParams.w;
-					o.worldPos = mul(unity_ObjectToWorld, v);
-					o.worldNormal = UnityObjectToWorldNormal(n);
-					o.bitangent = cross(o.normal, o.tangent) *tangentSign;
-					o.id = 0;
+		float tangentSign = input[i].tangent.w * unity_WorldTransformParams.w;
+		o.worldPos = mul(unity_ObjectToWorld, v);
+		o.worldNormal = UnityObjectToWorldNormal(n);
+		o.bitangent = cross(o.normal, o.tangent) *tangentSign;
+		o.id = 0;
 
-					outStream.Append(o);
-				}
+		outStream.Append(o);
+	}
 
-				outStream.RestartStrip();
-			}
+	outStream.RestartStrip();
+	}
 		   @endblock
 
 		   @block Surface
 			void SurfaceOut(in GSOut IN, inout Surface output) {
-				output.Albedo = tex2D(_MainTex, IN.uv) * _AlbedoColor;;
-				output.Emission = tex2D(_Emission, IN.uv);
+				output.Albedo.rgb = tex2D(_MainTex, IN.uv).rgb * _AlbedoColor;
+				output.Emission.rgb = tex2D(_Emission, IN.uv) * _Intensity  * _EmissionColor.rgb;
 			}
 			@endblock
 
 			fixed4 frag(GSOut IN) : SV_Target
 			{
-				fixed4 color = fixed4(0, 0, 0, 1);
 
+			fixed4 color = fixed4(0, 0, 0, 1);
 			Surface surf;
 			UNITY_INITIALIZE_OUTPUT(Surface, surf);
 			SurfaceOut(IN, surf);
-
-			//Albedo
-			color = surf.Albedo;
-
-			Shading(IN, color);
-
-			//Emission
-			fixed4 emission = surf.Emission;
-			color = lerp(color, emission * _Intensity  * _EmissionColor, emission);
-
+			Shading(IN, surf,color);
 			return color;
 			}
 
